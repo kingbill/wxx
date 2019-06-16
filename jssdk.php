@@ -109,5 +109,64 @@ class JSSDK {
     fwrite($fp, "<?php exit();?>" . $content);
     fclose($fp);
   }
+    /**
+     * 发送post请求
+     * @param string $url
+     * @param string $param
+     * @return bool|mixed
+     */
+  private function request_post($url = '', $param = '')
+    {
+        if (empty($url) || empty($param)) {
+            return false;
+        }
+        $postUrl = $url;
+        $curlPost = $param;
+        $ch = curl_init(); //初始化curl
+        curl_setopt($ch, CURLOPT_URL, $postUrl); //抓取指定网页
+        curl_setopt($ch, CURLOPT_HEADER, 0); //设置header
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //要求结果为字符串且输出到屏幕上
+        curl_setopt($ch, CURLOPT_POST, 1); //post提交方式
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $curlPost);
+        $data = curl_exec($ch); //运行curl
+        curl_close($ch);
+        return $data;
+    }
+   /**
+     * 发送自定义的模板消息
+     * @param $touser
+     * @param $template_id
+     * @param $url
+     * @param $data
+     * @param string $topcolor
+     * @return bool
+     */
+public function doSend($touser, $template_id, $url, $data, $topcolor = '#7B68EE')
+    {
+        /*
+         * data=>array(
+                'first'=>array('value'=>urlencode("您好,您已购买成功"),'color'=>"#743A3A"),
+                'name'=>array('value'=>urlencode("商品信息:微时代电影票"),'color'=>'#EEEEEE'),
+                'remark'=>array('value'=>urlencode('永久有效!密码为:1231313'),'color'=>'#FFFFFF'),
+            )
+         */
+        $template = array(
+            'touser' => $touser,
+            'template_id' => $template_id,
+            'url' => $url,
+            'topcolor' => $topcolor,
+            'data' => $data
+        );
+        $json_template = json_encode($template);
+        $accessToken = $this->getAccessToken();
+        $url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=$accessToken";
+        $dataRes = $this->request_post($url, urldecode($json_template));
+        echo $dataRes;
+        // if ($dataRes['errcode'] == 0) {
+        //     return true;
+        // } else {
+        //     return false;
+        // }
+    }
 }
 
